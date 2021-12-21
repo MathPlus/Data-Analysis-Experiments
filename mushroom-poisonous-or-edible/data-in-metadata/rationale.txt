@@ -1,0 +1,2 @@
+Data all categorical
+Two classes, fairly balanced (53.3% vs 46.7%)
