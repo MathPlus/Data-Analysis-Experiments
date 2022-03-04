@@ -19,7 +19,7 @@ def two_vectors_same_shape( x , y ) :
     return n
      
 
-def nan_Thompson_base10_distance( x , y , base_metric ) :
+def distance_Thompson_base10( x , y , base_metric ) :
     
     distce = np.NaN
         
@@ -30,14 +30,17 @@ def nan_Thompson_base10_distance( x , y , base_metric ) :
         pos_nan_x = np.isnan(x)
         pos_nan_y = np.isnan(y)
         
-        pos_nbr = ~ ( pos_nan_x | pos_nan_y )
+        pos_npos_x = x <= 0.0
+        pos_npos_y = y <= 0.0
         
-        nn = sum(pos_nbr)
+        pos_valid = ~ ( pos_nan_x | pos_nan_y | pos_npos_x | pos_npos_y )
+        
+        nn = sum(pos_valid)
         
         if ( nn > 0 ) :
             
-            xx = x[pos_nbr]
-            yy = y[pos_nbr]
+            xx = x[pos_valid]
+            yy = y[pos_valid]
             
             if ( np.all( xx > 0.0 ) and np.all( yy > 0.0 ) ) :
                 
