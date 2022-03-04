@@ -1,38 +1,43 @@
 """
-=============
-Breast Cancer
-=============
 
-This example generates a Mapper built from the `Wisconsin Breast Cancer Dataset`_.
+========================================================================================================
+Trend Analysis of a Database of Intravenous Pharmacokinetic Parameters in Humans for 1352 Drug Compounds
+========================================================================================================
 
-.. _Wisconsin Breast Cancer Dataset: https://www.kaggle.com/uciml/breast-cancer-wisconsin-data
+1352 molecules in total
+5 attributes for TDA
+    * "human VDss (L/kg)"
+    * "human CL (mL/min/kg)"
+    * "fraction unbound in plasma (fu)"
+    * "MRT (h)"
+    * "terminal  t1/2 (h)"
+TDA lenses: We use attributes
+    * "human VDss (L/kg)"
+    * "human CL (mL/min/kg)"
+39/1352 (2.88%) molecules have missingness within the two attributes that serve as TDA lenses.
+    * 37 molecules have missingness in "human VDss (L/kg)"
+    * 2 molecules have missingness in "human CL (mL/min/kg)"
+They are discarded.
+1313 molecules remain.
 
-
-The reasoning behind the choice of lenses in the demonstration below is:
-
-- **For lens1:** Lenses that make biological sense; in other words, lenses that highlight special features in the data, that I know about.
-- **For lens2:** Lenses that disperse the data, as opposed to clustering many points together.
-
-In the case of this particular data, using an anomaly score (in this case calculated using the IsolationForest from sklearn) makes biological sense since cancer cells are anomalous. For the second lens, we use the :math:`l^2` norm.
-
-For an interactive exploration of lens for the breast cancer, see the `Choosing a lens notebook <../../notebooks/Cancer-demo.html>`_.
-
-KeplerMapper also permits setting multiple datapoint color functions and node color functions in its html visualizations.
-The example code below demonstrates three ways this might be done. The rendered visualizations are also viewable:
-
-- `Visualization of the breat cancer mapper using multiple datapoint color functions <../../_static/breast-cancer-multiple-color-functions.html>`_
-- `Visualization of the breat cancer mapper using multiple node color functions <../../_static/breast-cancer-multiple-node-color-functions.html>`_
-- `Visualization of the breat cancer mapper using multiple datapoint and node color functions <../../_static/breast-cancer-multiple-color-functions-and-multiple-node-color-functions.html>`_
-
-.. image:: ../../../examples/breast-cancer/breast-cancer.png
-
+426/1313 (32.44%) molecules have missingness within the fives attributes used for TDA.
+    * No molecules have missingness in "human VDss (L/kg)" and "human CL (mL/min/kg)" due to the above preprocessing.
+    * 413 molecules have missingness in "fraction unbound in plasma (fu)"
+    * 4 molecules have missingness in "MRT (h)"
+    * 14 molecules have missingness in "terminal  t1/2 (h)"
+All non-missing values are positive, ranging from 0.0002 to 1400.0.
+Missing values are replaced with 0.0.
+This is not imputation. It is an accomodation of the clusterer as it rejects data with missingness.
+It does not impact the analysis for the following reason.
+    * The clusterer uses our implementation of the Thompson metric.
+    * This implementation is tolerant of missing values, and nonpositive values are treated as missing values.
 
 """
 
 import pandas as pd
 import numpy as np
 import kmapper as km
-from util import nan_Thompson_base10_distance
+from util import distance_Thompson_base10
 import sklearn
 
 filename_data_in   = "Data-in/IV-PK-Params-in-Humans.csv"
@@ -72,7 +77,7 @@ row_has_missing2a = cell_has_missing2a.any(axis=1)
 
 data = data_all[~row_has_missing2a]
 
-tda_data = data[feature2].to_numpy()
+tda_data = np.nan_to_num( data[feature2].to_numpy() )
 
 tda_lens = np.log2( data[feature2a].to_numpy() )
 
@@ -109,7 +114,7 @@ tda_covering_scheme = km.Cover( limits       = cfg_tda_covering_scheme['bound'] 
                                 perc_overlap = cfg_tda_covering_scheme['overlap'] ,
                                 verbose      = 2 )
 
-tda_metric = lambda x , y : nan_Thompson_base10_distance( x , y , "Linf" )
+tda_metric = lambda x , y : distance_Thompson_base10( x , y , "Linf" )
 
 tda_clusterer = sklearn.cluster.DBSCAN( eps           = 0.1 ,
                                         min_samples   = 5 ,

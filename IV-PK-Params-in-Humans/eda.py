@@ -1,6 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-from util import nan_Thompson_base10_distance
+from util import distance_Thompson_base10
 
 filename_data_in = "Data-in/IV-PK-Params-in-Humans.csv"
 
@@ -37,6 +37,9 @@ row_has_missing2a = cell_has_missing2a.any(axis=1)
 
 data = data_all[~row_has_missing2a]
 
+cell_has_missing2 = data[feature2].isna()
+row_has_missing2 = cell_has_missing2.any(axis=1)
+
 tda_data = data[feature2].to_numpy()
 
 fig , ax = plt.subplots()
@@ -51,9 +54,9 @@ k = -1
 for i in range(n) :
     for j in range(i+1,n) :
         k = k + 1
-        distce[k] = nan_Thompson_base10_distance( tda_data[i,:] ,
-                                                  tda_data[j,:] ,
-                                                  "Linf" )
+        distce[k] = distance_Thompson_base10( tda_data[i,:] ,
+                                              tda_data[j,:] ,
+                                              "Linf" )
 
 fig , ax = plt.subplots()
 plt.hist( distce , bins = 50 , density = True , facecolor = 'g' )
