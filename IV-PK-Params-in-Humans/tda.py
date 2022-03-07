@@ -37,7 +37,7 @@ It does not impact the analysis for the following reason.
 import pandas as pd
 import numpy as np
 import kmapper as km
-from util import distance_Thompson_base10
+from util import distance_Thompson_base10 , pd_col_onehotnan
 import sklearn
 
 filename_data_in   = "Data-in/IV-PK-Params-in-Humans.csv"
@@ -45,39 +45,50 @@ filename_tda_model = "TDA/IV-PK-Params-in-Humans.html"
 title_tda_model    = "Trend Analysis of a Database of Intravenous Pharmacokinetic Parameters in Humans for 1352 Drug Compounds"
 
 feature1 = \
-    [ "Name" ,
-      "CAS #" ]
+[ "Name" ,
+  "CAS #" ]
 
 feature2a = \
-    [ "human VDss (L/kg)" ,
-      "human CL (mL/min/kg)" ]
+[ "human VDss (L/kg)" ,
+  "human CL (mL/min/kg)" ]
 
 feature2b = \
-    [ "fraction unbound in plasma (fu)" ,
-      "MRT (h)" ,
-      "terminal  t1/2 (h)" ]
+[ "fraction unbound in plasma (fu)" ,
+  "MRT (h)" ,
+  "terminal  t1/2 (h)" ]
 
-feature3 = \
-    [ "MW" ,
-      "HBA" ,
-      "HBD" ,
-      "TPSA_NO" ,
-      "RotBondCount" ,
-      "moka_ionState7.4" ,
-      "MoKa.LogP" ,
-      "MoKa.LogD7.4" ]
+feature3a = \
+[ "MW" ,
+  "HBA" ,
+  "HBD" ,
+  "TPSA_NO" ,
+  "RotBondCount" ,
+  "MoKa.LogP" ,
+  "MoKa.LogD7.4" ]
+
+feature3b = "moka_ionState7.4"
 
 feature2 = feature2a + feature2b
-feature = feature1 + feature2 + feature3
+featureA = feature1 + feature2 + feature3a + [feature3b]
 
-data_all = pd.read_csv( filename_data_in , usecols = feature )
+dataA = pd.read_csv( filename_data_in , usecols = featureA + [feature3b] )
 
-cell_has_missing2a = data_all[feature2a].isna()
+dataOneHot_moka_ionState74 = pd_col_onehotnan( dataA[feature3b] , feature3b , "_" )
+
+dataB = pd.concat( [ dataA[featureA] , dataOneHot_moka_ionState74 ] , axis = 1 )
+
+feature4 = list( dataOneHot_moka_ionState74.columns )
+# featureB = featureA + feature4
+
+cell_has_missing2a = dataB[feature2a].isna()
 row_has_missing2a = cell_has_missing2a.any(axis=1)
 
-data = data_all[~row_has_missing2a]
+data = dataB[~row_has_missing2a]
 
-tda_data = np.nan_to_num( data[feature2].to_numpy() )
+cell_has_missing2 = data[feature2].isna()
+row_has_missing2 = cell_has_missing2.any(axis=1)
+
+tda_data = np.nan_to_num( data[feature2].to_numpy() , nan = 0.0 )
 
 tda_lens = np.log2( data[feature2a].to_numpy() )
 
@@ -133,6 +144,9 @@ tda_model = tda_mapper.map( X                      = tda_data ,
                             clusterer              = tda_clusterer ,
                             remove_duplicate_nodes = True )
 
-tda_mapper.visualize( tda_model ,
-                      path_html = filename_tda_model ,
-                      title     = title_tda_model )
+tda_color_descr = feature2 + feature3a + feature4
+tda_color_data = data[tda_color_descr].to_numpy()
+
+# tda_mapper.visualize( tda_model ,
+#                       path_html = filename_tda_model ,
+#                       title     = title_tda_model )
