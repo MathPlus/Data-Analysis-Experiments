@@ -1,5 +1,6 @@
 
 import numpy as np
+import pandas as pd
 
 
 def print_var( var_descr , var_value ) :
@@ -60,4 +61,16 @@ def distance_Thompson_base10( x , y , base_metric ) :
                     distce = np.max(z3)
     
     return distce
+     
+
+def pd_col_onehotnan( data_listlike , prefix , prefix_sep ) :
     
+    df = pd.get_dummies( data_listlike ,
+                         prefix     = prefix ,
+                         prefix_sep = prefix_sep ,
+                         dummy_na   = False )
+    
+    pos_missing = ( df == 0 ).all( axis = 1 )
+    df.iloc[pos_missing] = np.NaN
+    
+    return df
