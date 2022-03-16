@@ -1,1 +1,10 @@
+
+Kepler Mapper: A flexible Python implementation of the Mapper algorithm
+https://joss.theoj.org/papers/10.21105/joss.01315
+https://zenodo.org/record/3485851
 https://kepler-mapper.scikit-tda.org/
+
+Mapper Interactive: A Scalable, Extendable, and Interactive Toolbox for the Visual Exploration of High-Dimensional Data
+https://arxiv.org/pdf/2011.03209.pdf
+https://mapperinteractive.github.io/
+https://www.youtube.com/watch?v=KxHHrCXwGEI
