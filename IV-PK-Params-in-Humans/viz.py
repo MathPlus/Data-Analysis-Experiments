@@ -28,7 +28,7 @@ def myviztda( tda_mapper , tda_model , filename_tda_model , title_tda_model , td
                     color_function_name = tda_color_descr ,
                     node_color_function = [ "nanmean" , "nanmedian" ] ,
                     colorscale          = tda_colorscale ,
-                    nbins               = 20 ,
+                    nbins               = 10 ,
                     include_searchbar   = True ,
                     verbose             = 1 )
 
