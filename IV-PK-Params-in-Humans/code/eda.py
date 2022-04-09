@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from util import distance_Thompson_base10 , pd_col_onehotnan
 
-filename_data_in = "Data-in/IV-PK-Params-in-Humans.csv"
+filename_data_in = "../Data-in/IV-PK-Params-in-Humans.csv"
 
 feature1 = \
 [ "Name" ,

@@ -40,8 +40,8 @@ import kmapper as km
 from util import distance_Thompson_base10 , pd_col_onehotnan
 import sklearn
 
-filename_data_in   = "Data-in/IV-PK-Params-in-Humans.csv"
-filename_tda_model = "TDA/IV-PK-Params-in-Humans.html"
+filename_data_in   = "../Data-in/IV-PK-Params-in-Humans.csv"
+filename_tda_model = "../TDA_models/IV-PK-Params-in-Humans.html"
 title_tda_model    = "Trend Analysis of a Database of Intravenous Pharmacokinetic Parameters in Humans for 1352 Drug Compounds"
 
 feature1 = \
@@ -147,6 +147,6 @@ tda_model = tda_mapper.map( X                      = tda_data ,
 tda_color_descr = feature2 + feature3a + feature4
 tda_color_data = data[tda_color_descr].to_numpy()
 
-# tda_mapper.visualize( tda_model ,
-#                       path_html = filename_tda_model ,
-#                       title     = title_tda_model )
+tda_mapper.visualize( tda_model ,
+                      path_html = filename_tda_model ,
+                      title     = title_tda_model )
