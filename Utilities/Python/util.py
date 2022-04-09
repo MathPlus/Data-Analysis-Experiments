@@ -3,6 +3,8 @@ import numpy as np
 import pandas as pd
 
 
+weblink_fmt = '<a href="{url}" target="_blank">{descr}</a>'
+
 def print_var( var_descr , var_value ) :
     print( "{} = {}".format( var_descr , var_value ) )
 

@@ -37,12 +37,17 @@ It does not impact the analysis for the following reason.
 import pandas as pd
 import numpy as np
 import kmapper as km
-from util import distance_Thompson_base10 , pd_col_onehotnan
+from util import distance_Thompson_base10 , pd_col_onehotnan , weblink_fmt
 import sklearn
 
+
+publication_url = "https://dmd.aspetjournals.org/content/46/11/1466"
+publication_title = "Trend Analysis of a Database of Intravenous Pharmacokinetic Parameters in Humans for 1352 Drug Compounds"
+publication_weblink = weblink_fmt.format( url = publication_url , descr = publication_title )
+
+title_tda_model    = 'A topological model of the dataset studied in {publ_weblink}'.format( publ_weblink = '<i>' + publication_weblink +'</i>' )
 filename_data_in   = "../Data-in/IV-PK-Params-in-Humans.csv"
 filename_tda_model = "../TDA_models/IV-PK-Params-in-Humans.html"
-title_tda_model    = "Trend Analysis of a Database of Intravenous Pharmacokinetic Parameters in Humans for 1352 Drug Compounds"
 
 feature1 = \
 [ "Name" ,
