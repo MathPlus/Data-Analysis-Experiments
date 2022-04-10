@@ -75,4 +75,18 @@ def pd_col_onehotnan( data_listlike , prefix , prefix_sep ) :
     pos_missing = ( df == 0 ).all( axis = 1 )
     df.iloc[pos_missing] = np.NaN
     
-    return df
+    feature = list( df.columns )
+    
+    return df , feature
+
+
+def calc_for_all_pairs_A( x , f ) :
+    n = x.shape[0]
+    N = n * ( n - 1 ) // 2
+    y = [None] * N
+    k = -1
+    for i in range(n) :
+        for j in range(i+1,n) :
+            k = k + 1
+            y[k] = f( x[i,:] , x[j,:] )
+    return y
