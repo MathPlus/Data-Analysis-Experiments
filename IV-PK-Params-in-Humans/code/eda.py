@@ -53,6 +53,9 @@ fig , ax = plt.subplots()
 plt.loglog( tda_data[:,0] , tda_data[:,1] , 'r.' )
 plt.xlabel( feature2[0] )
 plt.ylabel( feature2[1] )
+plt.savefig( "../EDA/lenses_pair_1.png" )
+plt.show()
+plt.close()
 
 n = tda_data.shape[0]
 N = n * ( n - 1 ) // 2
@@ -69,3 +72,6 @@ fig , ax = plt.subplots()
 plt.hist( distce , bins = 50 , density = True , facecolor = 'g' )
 plt.xlabel( "Pairwise distances" )
 plt.ylabel( "Density" )
+plt.savefig( "../EDA/distances_distribution.png" )
+plt.show()
+plt.close()
