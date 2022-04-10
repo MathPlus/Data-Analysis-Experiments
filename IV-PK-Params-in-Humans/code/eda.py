@@ -1,20 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.stats import pearsonr
-from util_local import load_data
+from util_local import load_data , plotloglog_lenses_pair
 from util_global import distance_Thompson_base10 , calc_for_all_pairs_A
-
-def plotloglog_lenses_pair( x , y , x_label , y_label , fig_titlebase , fig_filename ) :
-    ( r , r_pval ) = pearsonr( np.log10(x) , np.log10(y) )
-    fig_title = '{titlebase}; loglogR = {loglogR:.1f}'.format( titlebase = fig_titlebase , loglogR = r )
-    fig , ax = plt.subplots()
-    plt.loglog( x , y , 'r.' )
-    plt.xlabel( x_label )
-    plt.ylabel( y_label )
-    plt.title( fig_title )
-    plt.savefig( fig_filename )
-    plt.show()
-    plt.close()
 
 filename_data_in = '../Data-in/IV-PK-Params-in-Humans.csv'
 
