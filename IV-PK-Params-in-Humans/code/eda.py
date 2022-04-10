@@ -1,77 +1,56 @@
-import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
-from util import distance_Thompson_base10 , pd_col_onehotnan
+from scipy.stats import pearsonr
+from util_local import load_data
+from util_global import distance_Thompson_base10 , calc_for_all_pairs_A
 
-filename_data_in = "../Data-in/IV-PK-Params-in-Humans.csv"
+def plotloglog_lenses_pair( x , y , x_label , y_label , fig_titlebase , fig_filename ) :
+    ( r , r_pval ) = pearsonr( np.log10(x) , np.log10(y) )
+    fig_title = '{titlebase}; loglogR = {loglogR:.1f}'.format( titlebase = fig_titlebase , loglogR = r )
+    fig , ax = plt.subplots()
+    plt.loglog( x , y , 'r.' )
+    plt.xlabel( x_label )
+    plt.ylabel( y_label )
+    plt.title( fig_title )
+    plt.savefig( fig_filename )
+    plt.show()
+    plt.close()
 
-feature1 = \
-[ "Name" ,
-  "CAS #" ]
+filename_data_in = '../Data-in/IV-PK-Params-in-Humans.csv'
 
-feature2a = \
-[ "human VDss (L/kg)" ,
-  "human CL (mL/min/kg)" ]
+_ , data , feature = load_data(filename_data_in)
 
-feature2b = \
-[ "fraction unbound in plasma (fu)" ,
-  "MRT (h)" ,
-  "terminal  t1/2 (h)" ]
+tda_data = np.nan_to_num( data[feature['2']].to_numpy() , nan = 0.0 )
 
-feature3a = \
-[ "MW" ,
-  "HBA" ,
-  "HBD" ,
-  "TPSA_NO" ,
-  "RotBondCount" ,
-  "MoKa.LogP" ,
-  "MoKa.LogD7.4" ]
+tda_lens_choice1_descr = feature['2a']
+tda_lens_choice1 = data[tda_lens_choice1_descr].to_numpy()
 
-feature3b = "moka_ionState7.4"
+tda_lens_choice2_descr = feature['5']
+tda_lens_choice2 = data[tda_lens_choice2_descr].to_numpy()
 
-feature2 = feature2a + feature2b
-featureA = feature1 + feature2 + feature3a + [feature3b]
+tda_metric = lambda x1 , x2 : distance_Thompson_base10( x1 , x2 , 'Linf' )
+distce = calc_for_all_pairs_A( tda_data , tda_metric )
 
-dataA = pd.read_csv( filename_data_in , usecols = featureA + [feature3b] )
+x = tda_lens_choice1[:,0]
+y = tda_lens_choice1[:,1]
+x_label = tda_lens_choice1_descr[0]
+y_label = tda_lens_choice1_descr[1]
+fig_titlebase = 'Lenses pair choice 1'
+fig_filename = '../EDA/lenses_pair_1.png'
+plotloglog_lenses_pair( x , y , x_label , y_label , fig_titlebase , fig_filename )
 
-dataOneHot_moka_ionState74 = pd_col_onehotnan( dataA[feature3b] , feature3b , "_" )
-
-dataB = pd.concat( [ dataA[featureA] , dataOneHot_moka_ionState74 ] , axis = 1 )
-
-featureB = featureA + list( dataOneHot_moka_ionState74.columns )
-
-cell_has_missing2a = dataB[feature2a].isna()
-row_has_missing2a = cell_has_missing2a.any(axis=1)
-
-data = dataB[~row_has_missing2a]
-
-cell_has_missing2 = data[feature2].isna()
-row_has_missing2 = cell_has_missing2.any(axis=1)
-
-tda_data = data[feature2].to_numpy()
-
-fig , ax = plt.subplots()
-plt.loglog( tda_data[:,0] , tda_data[:,1] , 'r.' )
-plt.xlabel( feature2[0] )
-plt.ylabel( feature2[1] )
-plt.savefig( "../EDA/lenses_pair_1.png" )
-plt.show()
-plt.close()
-
-n = tda_data.shape[0]
-N = n * ( n - 1 ) // 2
-distce = [None] * N
-k = -1
-for i in range(n) :
-    for j in range(i+1,n) :
-        k = k + 1
-        distce[k] = distance_Thompson_base10( tda_data[i,:] ,
-                                              tda_data[j,:] ,
-                                              "Linf" )
+x = tda_lens_choice2[:,0]
+y = tda_lens_choice2[:,1]
+x_label = tda_lens_choice2_descr[0]
+y_label = tda_lens_choice2_descr[1]
+fig_titlebase = 'Lenses pair choice 2'
+fig_filename = '../EDA/lenses_pair_2.png'
+plotloglog_lenses_pair( x , y , x_label , y_label , fig_titlebase , fig_filename )
 
 fig , ax = plt.subplots()
 plt.hist( distce , bins = 50 , density = True , facecolor = 'g' )
-plt.xlabel( "Pairwise distances" )
-plt.ylabel( "Density" )
-plt.savefig( "../EDA/distances_distribution.png" )
+plt.xlabel( 'Pairwise distances' )
+plt.ylabel( 'Density' )
+plt.savefig( '../EDA/distances_distribution.png' )
 plt.show()
 plt.close()
