@@ -1,6 +1,7 @@
 
 import numpy as np
 import pandas as pd
+import math
 
 
 weblink_fmt = '<a href="{url}" target="_blank">{descr}</a>'
@@ -89,4 +90,18 @@ def calc_for_all_pairs_A( x , f ) :
         for j in range(i+1,n) :
             k = k + 1
             y[k] = f( x[i,:] , x[j,:] )
+    return y
+
+
+def round_up( x , a ) :
+    y = np.NAN
+    if ( a > 0.0 ) :
+        y = a * math.ceil( x / a )
+    return y
+
+
+def round_dw( x , a ) :
+    y = np.NAN
+    if ( a > 0.0 ) :
+        y = a * math.floor( x / a )
     return y
