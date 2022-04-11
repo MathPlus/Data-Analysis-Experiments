@@ -2,7 +2,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import pearsonr
-from util_global import pd_col_onehotnan
+from util_global import pd_col_onehotnan , round_up , round_dw
+import kmapper as km
 
 
 def load_data(filename_data_in) :
@@ -66,3 +67,29 @@ def plotloglog_lenses_pair( x , y , x_label , y_label , fig_titlebase , fig_file
     plt.savefig( fig_filename )
     plt.show()
     plt.close()
+
+
+def make_tda_covering_scheme( tda_lens , precfg_tda_covering_scheme , verbo_lvl ) :
+    
+    tda_intvls_lowerbound0 = round_dw( min(tda_lens[:,0]) , precfg_tda_covering_scheme['lens_bound_rounding0'] )
+    tda_intvls_upperbound0 = round_up( max(tda_lens[:,0]) , precfg_tda_covering_scheme['lens_bound_rounding0'] )
+    tda_intvls_lowerbound1 = round_dw( min(tda_lens[:,1]) , precfg_tda_covering_scheme['lens_bound_rounding1'] )
+    tda_intvls_upperbound1 = round_up( max(tda_lens[:,1]) , precfg_tda_covering_scheme['lens_bound_rounding1'] )
+    
+    cfg_tda_covering_scheme = dict()
+    
+    cfg_tda_covering_scheme['bound'] = np.array( [ [ tda_intvls_lowerbound0 , tda_intvls_upperbound0 ] ,
+                                                   [ tda_intvls_lowerbound1 , tda_intvls_upperbound1 ] ] )
+    
+    cfg_tda_covering_scheme['count'] = [ precfg_tda_covering_scheme['intvls_count0'] ,
+                                         precfg_tda_covering_scheme['intvls_count1'] ]
+    
+    cfg_tda_covering_scheme['overlap'] = [ precfg_tda_covering_scheme['intvls_overlap0'] ,
+                                           precfg_tda_covering_scheme['intvls_overlap1'] ]
+    
+    tda_covering_scheme = km.Cover( limits       = cfg_tda_covering_scheme['bound'] ,
+                                    n_cubes      = cfg_tda_covering_scheme['count'] ,
+                                    perc_overlap = cfg_tda_covering_scheme['overlap'] ,
+                                    verbose      = verbo_lvl )
+
+    return tda_covering_scheme
