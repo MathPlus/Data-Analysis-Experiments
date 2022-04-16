@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from util_local import load_data , plotloglog_lenses_pair
 from util_global import distance_Thompson_base10 , calc_for_all_pairs_A
 
-filename_data_in = '../Data-in/IV-PK-Params-in-Humans.csv'
+filename_data_in = '../data/IV-PK-Params-in-Humans.csv'
 
 _ , data , feature = load_data(filename_data_in)
 
