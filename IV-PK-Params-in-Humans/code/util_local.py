@@ -54,7 +54,10 @@ def load_data(filename_data_in) :
     
     feature['B'] = feature['A'] + feature['4b'] + feature['5']
     
-    return dataA , dataB , feature
+    row_count_dataA = dataA.shape[0]
+    row_count_dataB = dataB.shape[0]
+    
+    return dataA , row_count_dataA , dataB , row_count_dataB , feature
 
 
 def plotloglog_lenses_pair( x , y , x_label , y_label , fig_titlebase , fig_filename ) :
