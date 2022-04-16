@@ -10,6 +10,7 @@ import kmapper as km
 from util_global import weblink_fmt , distance_Thompson_base10
 from util_local import load_data , make_tda_covering_scheme
 import sklearn
+import pickle
 
 
 verbo_lvl = 0
@@ -20,7 +21,8 @@ publication_title = 'Trend Analysis of a Database of Intravenous Pharmacokinetic
 publication_weblink = weblink_fmt.format( url = publication_url , descr = publication_title )
 
 title_tda_model    = 'A topological model of the dataset studied in {publ_weblink}'.format( publ_weblink = '<i>' + publication_weblink +'</i>' )
-filename_data_in   = '../Data-in/IV-PK-Params-in-Humans.csv'
+filename_data_in   = '../data/IV-PK-Params-in-Humans.csv'
+filename_data_out  = '../TDA_models/IV-PK-Params-in-Humans.pckl'
 filename_tda_model = '../TDA_models/IV-PK-Params-in-Humans.html'
 
 _ , data , feature = load_data(filename_data_in)
@@ -60,7 +62,11 @@ tda_model = tda_mapper.map( X                      = tda_data ,
                             cover                  = tda_covering_scheme ,
                             clusterer              = tda_clusterer ,
                             remove_duplicate_nodes = True )
-            
+
+filehdl_data_out = open( filename_data_out , 'wb' )
+pickle.dump( tda_model , filehdl_data_out , protocol = pickle.HIGHEST_PROTOCOL )
+filehdl_data_out.close()
+
 tda_mapper.visualize( tda_model ,
                       path_html = filename_tda_model ,
                       title     = title_tda_model )

@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from scipy.stats import pearsonr
 from util_global import pd_col_onehotnan , round_up , round_dw
 import kmapper as km
+import networkx as nx
 
 
 def load_data(filename_data_in) :
@@ -93,3 +94,66 @@ def make_tda_covering_scheme( tda_lens , precfg_tda_covering_scheme , verbo_lvl 
                                     verbose      = verbo_lvl )
 
     return tda_covering_scheme
+
+
+def get_node_idx_pair(node_id_str) :
+    _ , _ , node_id_substr = node_id_str.partition('cube')
+    patch_idx_str , _ , node_idx_str = node_id_substr.partition('_cluster')
+    patch_idx = int(patch_idx_str)
+    node_idx = int(node_idx_str)
+    return patch_idx , node_idx
+
+
+def get_tda_remodel(tda_model) :
+    
+    node_id_str_list = list( tda_model['nodes'].keys() )
+    
+    node_id_data_list_ = [ ( get_node_idx_pair(node_id_str) , node_id_str )
+                           for node_id_str in node_id_str_list ]
+    
+    node_id_data_list = sorted( node_id_data_list_ , key = lambda node_id_data : node_id_data[0] )
+    
+    node_data_list = [ { 'patch_idx'              : node_id_data[0][0] ,
+                         'cluster_idx'            : node_id_data[0][1] ,
+                         'node_size'              : None , #len(tda_model['nodes'][ node_id_data[1]]) ,
+                         'node_size/dataset_size' : None ,
+                         'row_idx_list'           : sorted( tda_model['nodes'][ node_id_data[1]] ) }
+                       for node_id_data in node_id_data_list ]
+    
+    nber_nodes = len(node_data_list)
+    
+    edge_list_ = [ item for item in tda_model['simplices'] if len(item) == 2 ]
+    nber_edges = len(edge_list_)
+    edge_list = [None] * nber_edges
+    
+    for i in range(nber_edges) :
+        nodeA_idx_list = [ idx for idx in range(nber_nodes) if node_id_data_list[idx][1] == edge_list_[i][0] ]
+        nodeB_idx_list = [ idx for idx in range(nber_nodes) if node_id_data_list[idx][1] == edge_list_[i][1] ]
+        assert( len(nodeA_idx_list) ==  1 )
+        assert( len(nodeB_idx_list) ==  1 )
+        assert( nodeA_idx_list[0] != nodeB_idx_list[0] )
+        if nodeA_idx_list[0] < nodeB_idx_list[0] :
+            nodeA_idx = nodeA_idx_list[0]
+            nodeB_idx = nodeB_idx_list[0]
+        else :
+            nodeA_idx = nodeB_idx_list[0]
+            nodeB_idx = nodeA_idx_list[0]
+        edge_list[i] = ( nodeA_idx , nodeB_idx )
+    
+    edge_data_list = [ { 'nodeA_idx'              : edge[0] ,
+                         'nodeB_idx'              : edge[1] ,
+                         'edge_size'              : None ,
+                         'edge_size/dataset_size' : None ,
+                         'edge_size/nodeA_size'   : None ,
+                         'edge_size/nodeB_size'   : None ,
+                         'row_idx_list'           : None ,
+                         'nodeA_ovlp_idx_list'    : None ,
+                         'nodeB_ovlp_idx_list'    : None }
+                       for edge in edge_list ]
+    
+    return node_data_list , edge_data_list
+
+
+# def make_tda_graph(tda_model) :
+#     tda_graph = nx.Graph()
+    
