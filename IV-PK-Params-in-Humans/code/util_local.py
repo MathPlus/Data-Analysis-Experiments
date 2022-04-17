@@ -2,7 +2,10 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import pearsonr
-from util_global import pd_col_onehotnan , round_up , round_dw
+from util_global import pd_col_onehotnan ,\
+                        round_up ,\
+                        round_dw ,\
+                        list_intersection
 import kmapper as km
 import networkx as nx
 
@@ -54,10 +57,12 @@ def load_data(filename_data_in) :
     
     feature['B'] = feature['A'] + feature['4b'] + feature['5']
     
-    row_count_dataA = dataA.shape[0]
-    row_count_dataB = dataB.shape[0]
+    return dataA , dataB , feature
     
-    return dataA , row_count_dataA , dataB , row_count_dataB , feature
+    # row_count_dataA = dataA.shape[0]
+    # row_count_dataB = dataB.shape[0]
+    
+    # return dataA , row_count_dataA , dataB , row_count_dataB , feature
 
 
 def plotloglog_lenses_pair( x , y , x_label , y_label , fig_titlebase , fig_filename ) :
@@ -73,27 +78,27 @@ def plotloglog_lenses_pair( x , y , x_label , y_label , fig_titlebase , fig_file
     plt.close()
 
 
-def make_tda_covering_scheme( tda_lens , precfg_tda_covering_scheme , verbo_lvl ) :
+def make_tda_covering_scheme( tda_lens , cfg_tda_covering_scheme , verbo_lvl ) :
     
-    tda_intvls_lowerbound0 = round_dw( min(tda_lens[:,0]) , precfg_tda_covering_scheme['lens_bound_rounding0'] )
-    tda_intvls_upperbound0 = round_up( max(tda_lens[:,0]) , precfg_tda_covering_scheme['lens_bound_rounding0'] )
-    tda_intvls_lowerbound1 = round_dw( min(tda_lens[:,1]) , precfg_tda_covering_scheme['lens_bound_rounding1'] )
-    tda_intvls_upperbound1 = round_up( max(tda_lens[:,1]) , precfg_tda_covering_scheme['lens_bound_rounding1'] )
+    tda_intvls_lowerbound0 = round_dw( min(tda_lens[:,0]) , cfg_tda_covering_scheme['lens_bound_rounding0'] )
+    tda_intvls_upperbound0 = round_up( max(tda_lens[:,0]) , cfg_tda_covering_scheme['lens_bound_rounding0'] )
+    tda_intvls_lowerbound1 = round_dw( min(tda_lens[:,1]) , cfg_tda_covering_scheme['lens_bound_rounding1'] )
+    tda_intvls_upperbound1 = round_up( max(tda_lens[:,1]) , cfg_tda_covering_scheme['lens_bound_rounding1'] )
     
-    cfg_tda_covering_scheme = dict()
+    prm_tda_covering_scheme = dict()
     
-    cfg_tda_covering_scheme['bound'] = np.array( [ [ tda_intvls_lowerbound0 , tda_intvls_upperbound0 ] ,
+    prm_tda_covering_scheme['bound'] = np.array( [ [ tda_intvls_lowerbound0 , tda_intvls_upperbound0 ] ,
                                                    [ tda_intvls_lowerbound1 , tda_intvls_upperbound1 ] ] )
     
-    cfg_tda_covering_scheme['count'] = [ precfg_tda_covering_scheme['intvls_count0'] ,
-                                         precfg_tda_covering_scheme['intvls_count1'] ]
+    prm_tda_covering_scheme['count'] = [ cfg_tda_covering_scheme['intvls_count0'] ,
+                                         cfg_tda_covering_scheme['intvls_count1'] ]
     
-    cfg_tda_covering_scheme['overlap'] = [ precfg_tda_covering_scheme['intvls_overlap0'] ,
-                                           precfg_tda_covering_scheme['intvls_overlap1'] ]
+    prm_tda_covering_scheme['overlap'] = [ cfg_tda_covering_scheme['intvls_overlap0'] ,
+                                           cfg_tda_covering_scheme['intvls_overlap1'] ]
     
-    tda_covering_scheme = km.Cover( limits       = cfg_tda_covering_scheme['bound'] ,
-                                    n_cubes      = cfg_tda_covering_scheme['count'] ,
-                                    perc_overlap = cfg_tda_covering_scheme['overlap'] ,
+    tda_covering_scheme = km.Cover( limits       = prm_tda_covering_scheme['bound'] ,
+                                    n_cubes      = prm_tda_covering_scheme['count'] ,
+                                    perc_overlap = prm_tda_covering_scheme['overlap'] ,
                                     verbose      = verbo_lvl )
 
     return tda_covering_scheme
@@ -107,25 +112,70 @@ def get_node_idx_pair(node_id_str) :
     return patch_idx , node_idx
 
 
-def get_tda_remodel(tda_model) :
+def get_node_data( node_id_data , tda_modelKM_nodes , row_count ) :
+    node_row_idx_list = sorted( tda_modelKM_nodes[node_id_data[1]] )
+    node_size = len(node_row_idx_list)
+    node_size_divby_dataset_size = node_size / row_count
+    node_data = { 'patch_idx'              : node_id_data[0][0] ,
+                  'cluster_idx'            : node_id_data[0][1] ,
+                  'node_size'              : node_size ,
+                  'node_size/dataset_size' : node_size_divby_dataset_size ,
+                  'node_row_idx_list'      : node_row_idx_list }
+    return node_data
+
+
+def get_edge_data( edge , node_data_list , row_count ) :
     
-    node_id_str_list = list( tda_model['nodes'].keys() )
+    nodeA_idx = edge[0]
+    nodeB_idx = edge[1]
+    
+    nodeA_data = node_data_list[nodeA_idx]
+    nodeB_data = node_data_list[nodeB_idx]
+    
+    edge_row_idx_list = list_intersection( nodeA_data['node_row_idx_list'] ,
+                                           nodeB_data['node_row_idx_list'] )
+    
+    edge_size = len(edge_row_idx_list)
+    
+    nodeA_size = nodeA_data['node_size']
+    nodeB_size = nodeB_data['node_size']
+    nodesAB_size = nodeA_size + nodeB_size - edge_size
+    
+    edge_size_divby_dataset_size = edge_size / row_count
+    edge_size_divby_nodeA_size   = edge_size / nodeA_size
+    edge_size_divby_nodeB_size   = edge_size / nodeB_size
+    edge_size_divby_nodesAB_size = edge_size / nodesAB_size
+    
+    edge_data = { 'nodeA_idx'              : nodeA_idx ,
+                  'nodeB_idx'              : nodeB_idx ,
+                  'edge_size'              : edge_size ,
+                  'edge_size/dataset_size' : edge_size_divby_dataset_size ,
+                  'edge_size/nodeA_size'   : edge_size_divby_nodeA_size ,
+                  'edge_size/nodeB_size'   : edge_size_divby_nodeB_size ,
+                  'edge_size/nodesAB_size' : edge_size_divby_nodesAB_size ,
+                  'edge_row_idx_list'      : edge_row_idx_list }
+    
+    return edge_data
+
+
+def parse_tda_modelKM( tda_modelKM , row_count ) :
+    
+    tda_modelKM_nodes = tda_modelKM['nodes']
+    tda_modelKM_simplices = tda_modelKM['simplices']
+    
+    node_id_str_list = list( tda_modelKM_nodes.keys() )
     
     node_id_data_list_ = [ ( get_node_idx_pair(node_id_str) , node_id_str )
-                           for node_id_str in node_id_str_list ]
+                            for node_id_str in node_id_str_list ]
     
     node_id_data_list = sorted( node_id_data_list_ , key = lambda node_id_data : node_id_data[0] )
     
-    node_data_list = [ { 'patch_idx'              : node_id_data[0][0] ,
-                         'cluster_idx'            : node_id_data[0][1] ,
-                         'node_size'              : None , #len(tda_model['nodes'][ node_id_data[1]]) ,
-                         'node_size/dataset_size' : None ,
-                         'row_idx_list'           : sorted( tda_model['nodes'][ node_id_data[1]] ) }
+    node_data_list = [ get_node_data( node_id_data , tda_modelKM_nodes , row_count )
                        for node_id_data in node_id_data_list ]
     
     nber_nodes = len(node_data_list)
     
-    edge_list_ = [ item for item in tda_model['simplices'] if len(item) == 2 ]
+    edge_list_ = [ item for item in tda_modelKM_simplices if len(item) == 2 ]
     nber_edges = len(edge_list_)
     edge_list = [None] * nber_edges
     
@@ -143,20 +193,12 @@ def get_tda_remodel(tda_model) :
             nodeB_idx = nodeA_idx_list[0]
         edge_list[i] = ( nodeA_idx , nodeB_idx )
     
-    edge_data_list = [ { 'nodeA_idx'              : edge[0] ,
-                         'nodeB_idx'              : edge[1] ,
-                         'edge_size'              : None ,
-                         'edge_size/dataset_size' : None ,
-                         'edge_size/nodeA_size'   : None ,
-                         'edge_size/nodeB_size'   : None ,
-                         'row_idx_list'           : None ,
-                         'nodeA_ovlp_idx_list'    : None ,
-                         'nodeB_ovlp_idx_list'    : None }
+    edge_data_list = [ get_edge_data( edge , node_data_list , row_count )
                        for edge in edge_list ]
     
     return node_data_list , edge_data_list
-
-
+            
+            
 # def make_tda_graph(tda_model) :
 #     tda_graph = nx.Graph()
     

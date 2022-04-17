@@ -105,3 +105,8 @@ def round_dw( x , a ) :
     if ( a > 0.0 ) :
         y = a * math.floor( x / a )
     return y
+
+
+def list_intersection( lst1 , lst2 ) :
+    lst = [ item for item in lst1 if item in lst2 ]
+    return lst

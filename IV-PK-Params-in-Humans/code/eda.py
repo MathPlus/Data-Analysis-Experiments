@@ -5,7 +5,7 @@ from util_global import distance_Thompson_base10 , calc_for_all_pairs_A
 
 filename_data_in = '../data/IV-PK-Params-in-Humans.csv'
 
-_ , _ , data , _ , feature = load_data(filename_data_in)
+_ , data , feature = load_data(filename_data_in)
 
 tda_data = np.nan_to_num( data[feature['2']].to_numpy() , nan = 0.0 )
 
