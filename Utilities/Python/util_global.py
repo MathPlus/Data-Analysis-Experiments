@@ -110,3 +110,15 @@ def round_dw( x , a ) :
 def list_intersection( lst1 , lst2 ) :
     lst = [ item for item in lst1 if item in lst2 ]
     return lst
+
+
+def rgb_0_1_to_0_255( rgb_0_1 ) :
+    rgb_0_255 = ( round_dw( 256 * rgb_0_1[0] , 1 ) ,
+                  round_dw( 256 * rgb_0_1[1] , 1 ) ,
+                  round_dw( 256 * rgb_0_1[2] , 1 ) )
+    return rgb_0_255
+
+
+def rgba_0_1_to_0_255( rgba_0_1 ) :
+    rgba_0_255 = rgb_0_1_to_0_255( rgba_0_1[0:3] ) + ( rgba_0_1[3] , )
+    return rgba_0_255
