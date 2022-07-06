@@ -44,7 +44,7 @@ def load_data(filename_data_in) :
     feature['A'] = feature['1'] + feature['2'] + feature['3'] + [feature['4a']]
     
     dataA = pd.read_csv( filename_data_in , usecols = feature['A'] )
-    cell_has_missing = dataA[ feature['2a'] + [feature['2b']] ].isna()
+    cell_has_missing = dataA.isna()
     row_has_missing  = cell_has_missing.any(axis=1)
     dataB1 = dataA[~row_has_missing]
     dataB2 , feature['4b'] = pd_col_onehotnan( dataB1[feature['4a']] , feature['4a'] , '_' )
