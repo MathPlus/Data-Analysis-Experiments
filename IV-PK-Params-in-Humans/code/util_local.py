@@ -7,7 +7,7 @@ from util_global import pd_col_onehotnan ,\
                         round_dw ,\
                         list_intersection
 import kmapper as km
-import networkx as nx
+# import networkx as nx
 
 
 def load_data(filename_data_in) :
